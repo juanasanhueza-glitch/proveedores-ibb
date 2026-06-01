@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KPI Calidad – Histórico 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'IBM Plex Sans',sans-serif;background:#F5F5F3;color:#1a1a18;min-height:100vh;padding:2rem 1rem}
+.wrap{max-width:960px;margin:0 auto}
+.header{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:1.5rem}
+h1{font-size:22px;font-weight:500;color:#1a1a18}
+.sub{font-size:13px;color:#888780;margin-top:3px}
+.selector{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:1.25rem;background:#fff;border:1px solid #E8E6DE;border-radius:10px;padding:12px 16px}
+.selector label{font-size:13px;color:#888780;font-weight:500}
+select{font-size:13px;padding:6px 12px;border-radius:8px;border:1px solid #D3D1C7;background:#fff;color:#1a1a18;cursor:pointer;font-family:'IBM Plex Sans',sans-serif}
+select:focus{outline:none;border-color:#378ADD}
+.legend{display:flex;gap:18px;margin-bottom:1.25rem;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:7px;font-size:13px;color:#5a5a56}
+.dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-bottom:1.5rem}
+.card{background:#fff;border:1px solid #E8E6DE;border-radius:12px;overflow:hidden}
+.card-top{padding:16px 18px 10px}
+.card-num{font-size:11px;font-weight:500;color:#888780;letter-spacing:.05em;margin-bottom:4px;text-transform:uppercase}
+.card-title{font-size:15px;font-weight:500;color:#1a1a18;line-height:1.3}
+.card-sub{font-size:12px;color:#888780;margin-top:3px;line-height:1.4}
+.card-body{padding:0 18px 16px}
+.divider{height:1px;background:#F1EFE8;margin-bottom:14px}
+.sembar{display:flex;gap:3px;height:7px;margin-bottom:14px}
+.seg{flex:1;border-radius:3px}
+.val-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.val{font-size:32px;font-weight:500;line-height:1}
+.pill{font-size:11px;font-weight:500;padding:4px 12px;border-radius:20px}
+.rangos{display:flex;gap:6px}
+.rango{flex:1;padding:5px 6px;border-radius:8px;text-align:center}
+.rl{font-size:10px;font-weight:500;margin-bottom:2px}
+.rv{font-size:11px;font-weight:500}
+.rg{background:#EAF3DE}.rg .rl{color:#27500A}.rg .rv{color:#3B6D11}
+.ry{background:#FAEEDA}.ry .rl{color:#633806}.ry .rv{color:#854F0B}
+.rr{background:#FCEBEB}.rr .rl{color:#791F1F}.rr .rv{color:#A32D2D}
+.resumen{display:flex;gap:12px;margin-bottom:1.5rem;flex-wrap:wrap}
+.res{flex:1;min-width:90px;background:#fff;border:1px solid #E8E6DE;border-radius:10px;padding:14px;text-align:center}
+.res-num{font-size:26px;font-weight:500}
+.res-lbl{font-size:12px;color:#888780;margin-top:3px}
+.chart-wrap{background:#fff;border:1px solid #E8E6DE;border-radius:12px;padding:20px;margin-bottom:1.5rem}
+.chart-title{font-size:14px;font-weight:500;color:#1a1a18;margin-bottom:16px}
+.chart-area{position:relative;height:240px}
+.tabla-wrap{background:#fff;border:1px solid #E8E6DE;border-radius:12px;overflow:hidden;margin-bottom:1.5rem}
+.tabla-title{font-size:14px;font-weight:500;color:#1a1a18;padding:16px 18px 12px;border-bottom:1px solid #F1EFE8}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{padding:9px 14px;text-align:left;font-size:11px;font-weight:500;color:#888780;text-transform:uppercase;letter-spacing:.04em;background:#F5F5F3;border-bottom:1px solid #E8E6DE}
+td{padding:10px 14px;border-top:1px solid #F1EFE8;color:#1a1a18}
+.td-mes{font-weight:500}
+.badge{font-size:11px;font-weight:500;padding:3px 10px;border-radius:12px;display:inline-block}
+footer{text-align:right;font-size:11px;color:#B4B2A9;margin-top:1rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div>
+      <h1>Indicadores de calidad 2026</h1>
+      <p class="sub">Historial mensual · Tendencia y semáforo</p>
+    </div>
+  </div>
+
+  <div class="selector">
+    <label>&#128269; Ver mes:</label>
+    <select id="sel-mes" onchange="cambiarMes()">
+      <option value="0">Enero</option>
+      <option value="1">Febrero</option>
+      <option value="2">Marzo</option>
+      <option value="3">Abril</option>
+      <option value="4" selected>Mayo</option>
+    </select>
+  </div>
+
+  <div class="legend">
+    <div class="leg"><div class="dot" style="background:#639922"></div> Cumple (verde)</div>
+    <div class="leg"><div class="dot" style="background:#EF9F27"></div> En alerta (amarillo)</div>
+    <div class="leg"><div class="dot" style="background:#E24B4A"></div> No cumple (rojo)</div>
+  </div>
+
+  <div class="cards" id="cards"></div>
+  <div class="resumen" id="resumen"></div>
+
+  <div class="chart-wrap">
+    <div class="chart-title">Tendencia mensual por indicador</div>
+    <div class="chart-area"><canvas id="chart"></canvas></div>
+  </div>
+
+  <div class="tabla-wrap">
+    <div class="tabla-title">Historial completo</div>
+    <table id="tabla"></table>
+  </div>
+
+  <footer>KPI Calidad 2026 · Aseguramiento de Calidad</footer>
+</div>
+
+<script>
+var MESES=["Enero","Febrero","Marzo","Abril","Mayo"];
+var DEF=[
+  {num:"1",titulo:"RFT Productos",desc:"Lotes liberados sin desviaciones / Lotes totales",tipo:"mayor",verde:{min:85,label:"≥85%"},amarillo:{min:81,label:"81%–84%"},rojo:{label:"≤80%"},datos:[91,89,92,87,81]},
+  {num:"2",titulo:"Cierre Desviaciones",desc:'Desviaciones abiertas ("Por Emitir") / Total desviaciones abiertas',tipo:"menor",verde:{max:25,label:"<25%"},amarillo:{max:49,label:"26%–49%"},rojo:{label:">50%"},datos:[35,35,44,41,41]},
+  {num:"3",titulo:"Cierre CAPA",desc:"CAPAs abiertas atrasadas / Total CAPAs abiertas",tipo:"menor",verde:{max:25,label:"<25%"},amarillo:{max:49,label:"26%–49%"},rojo:{label:">50%"},datos:[84,85,75,60,50]},
+  {num:"4",titulo:"Cierre OOS",desc:"OOS abiertas atrasadas / Total OOS abiertas",tipo:"menor",verde:{max:25,label:"<25%"},amarillo:{max:49,label:"26%–49%"},rojo:{label:">50%"},datos:[72,72,72,72,72]}
+];
+var mesActual=4;
+var chart=null;
+var C={
+  green:{val:"#3B6D11",pb:"#EAF3DE",pt:"#27500A",seg:"#639922",lbl:"Cumple"},
+  yellow:{val:"#854F0B",pb:"#FAEEDA",pt:"#633806",seg:"#EF9F27",lbl:"En alerta"},
+  red:{val:"#A32D2D",pb:"#FCEBEB",pt:"#791F1F",seg:"#E24B4A",lbl:"No cumple"}
+};
+
+function estado(ind,val){
+  if(ind.tipo==="mayor"){if(val>=ind.verde.min)return"green";if(val>=ind.amarillo.min)return"yellow";return"red";}
+  else{if(val<=ind.verde.max)return"green";if(val<=ind.amarillo.max)return"yellow";return"red";}
+}
+
+function cambiarMes(){
+  mesActual=parseInt(document.getElementById("sel-mes").value);
+  renderCards();
+}
+
+function renderCards(){
+  var cont=document.getElementById("cards");
+  cont.innerHTML="";
+  var v=0,a=0,r=0;
+  DEF.forEach(function(ind){
+    var val=ind.datos[mesActual],e=estado(ind,val),c=C[e];
+    if(e==="green")v++;else if(e==="yellow")a++;else r++;
+    var segs=["green","yellow","red"].map(function(s){
+      var active=e===s;
+      return'<div class="seg" style="background:'+C[s].seg+';opacity:'+(active?1:.2)+';height:'+(active?'9px':'7px')+';margin-top:'+(active?'-1px':'0')+'"></div>';
+    }).join("");
+    var card=document.createElement("div");
+    card.className="card";
+    card.innerHTML=
+      '<div class="card-top">'+
+        '<div class="card-num">Indicador '+ind.num+'</div>'+
+        '<div class="card-title">'+ind.titulo+'</div>'+
+        '<div class="card-sub">'+ind.desc+'</div>'+
+      '</div>'+
+      '<div class="card-body">'+
+        '<div class="divider"></div>'+
+        '<div class="sembar">'+segs+'</div>'+
+        '<div class="val-row">'+
+          '<span class="val" style="color:'+c.val+'">'+val+'%</span>'+
+          '<span class="pill" style="background:'+c.pb+';color:'+c.pt+'">'+c.lbl+'</span>'+
+        '</div>'+
+        '<div class="rangos">'+
+          '<div class="rango rg"><div class="rl">Verde</div><div class="rv">'+ind.verde.label+'</div></div>'+
+          '<div class="rango ry"><div class="rl">Amarillo</div><div class="rv">'+ind.amarillo.label+'</div></div>'+
+          '<div class="rango rr"><div class="rl">Rojo</div><div class="rv">'+ind.rojo.label+'</div></div>'+
+        '</div>'+
+      '</div>';
+    cont.appendChild(card);
+  });
+  document.getElementById("resumen").innerHTML=
+    '<div class="res"><div class="res-num" style="color:#3B6D11">'+v+'</div><div class="res-lbl">Cumplen</div></div>'+
+    '<div class="res"><div class="res-num" style="color:#854F0B">'+a+'</div><div class="res-lbl">En alerta</div></div>'+
+    '<div class="res"><div class="res-num" style="color:#A32D2D">'+r+'</div><div class="res-lbl">No cumplen</div></div>'+
+    '<div class="res"><div class="res-num" style="color:#1a1a18">4</div><div class="res-lbl">Total</div></div>';
+}
+
+function renderChart(){
+  var ctx=document.getElementById("chart").getContext("2d");
+  if(chart)chart.destroy();
+  var colores=["#185FA5","#639922","#E24B4A","#EF9F27"];
+  var datasets=DEF.map(function(ind,i){
+    return{
+      label:ind.titulo,
+      data:ind.datos,
+      borderColor:colores[i],
+      backgroundColor:colores[i]+"22",
+      pointBackgroundColor:ind.datos.map(function(v){return C[estado(ind,v)].seg;}),
+      pointRadius:5,pointHoverRadius:7,borderWidth:2,tension:0.3,fill:false
+    };
+  });
+  chart=new Chart(ctx,{
+    type:"line",
+    data:{labels:MESES,datasets:datasets},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{position:"bottom",labels:{font:{size:11},boxWidth:12,padding:16}},
+        tooltip:{callbacks:{label:function(ctx){return" "+ctx.dataset.label+": "+ctx.parsed.y+"%";}}}
+      },
+      scales:{
+        y:{min:0,max:100,ticks:{callback:function(v){return v+"%"},font:{size:11}},grid:{color:"rgba(0,0,0,0.05)"}},
+        x:{ticks:{font:{size:11}},grid:{display:false}}
+      }
+    }
+  });
+}
+
+function renderTabla(){
+  var tabla=document.getElementById("tabla");
+  var head="<thead><tr><th>Mes</th>";
+  DEF.forEach(function(ind){head+="<th>"+ind.titulo+"</th>";});
+  head+="</tr></thead>";
+  var body="<tbody>";
+  MESES.forEach(function(mes,mi){
+    body+="<tr><td class='td-mes'>"+mes+"</td>";
+    DEF.forEach(function(ind){
+      var val=ind.datos[mi],e=estado(ind,val),c=C[e];
+      body+="<td><span class='badge' style='background:"+c.pb+";color:"+c.pt+"'>"+val+"%</span></td>";
+    });
+    body+="</tr>";
+  });
+  body+="</tbody>";
+  tabla.innerHTML=head+body;
+}
+
+renderCards();
+renderChart();
+renderTabla();
+</script>
+</body>
+</html>
