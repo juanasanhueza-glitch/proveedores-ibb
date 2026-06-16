@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KPI Validaciones 2026 – Cumplimiento de Programas</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'IBM Plex Sans',sans-serif;background:#F5F5F3;color:#1a1a18;min-height:100vh;padding:2rem 1rem}
+.wrap{max-width:1000px;margin:0 auto}
+
+/* Header */
+.header{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:1.5rem}
+h1{font-size:22px;font-weight:500;color:#1a1a18}
+.sub{font-size:13px;color:#888780;margin-top:3px}
+.formula{font-size:12px;color:#5F5E5A;margin-top:5px;font-style:italic}
+
+/* Aviso pendientes */
+.aviso{background:#FAEEDA;border:1px solid #FAC775;border-radius:10px;padding:10px 16px;font-size:12px;color:#633806;margin-bottom:1.25rem;line-height:1.7}
+.aviso strong{font-weight:500}
+
+/* Leyenda */
+.legend{display:flex;gap:18px;margin-bottom:1.25rem;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:7px;font-size:13px;color:#5a5a56}
+.dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+/* Semáforo */
+.semaforo-wrap{margin-bottom:1.25rem}
+.semaforo{width:100%;padding:14px 20px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;transition:background .4s;color:#fff}
+
+/* Tarjetas resumen */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:1.5rem}
+.card{background:#fff;border:1px solid #E8E6DE;border-radius:12px;padding:16px;text-align:center}
+.card-num{font-size:28px;font-weight:500;color:#1a1a18}
+.card-lbl{font-size:12px;color:#888780;margin-top:4px}
+
+/* Avance por programa */
+.section-title{font-size:11px;font-weight:500;color:#888780;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #E8E6DE}
+.prog-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:1.5rem}
+.prog-card{background:#fff;border:1px solid #E8E6DE;border-radius:10px;padding:12px 14px}
+.prog-card.pendiente-doc{background:#F5F5F3;border:1px dashed #D3D1C7;opacity:.75}
+.prog-code{font-size:10px;font-weight:500;color:#888780;letter-spacing:.05em;margin-bottom:3px}
+.prog-name{font-size:12px;color:#1a1a18;margin-bottom:8px;line-height:1.35}
+.prog-nums{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+.prog-ejec{font-size:20px;font-weight:500}
+.prog-total{font-size:12px;color:#888780}
+.bar-bg{background:#E8E6DE;border-radius:3px;height:5px;overflow:hidden}
+.bar-fill{height:5px;border-radius:3px;transition:width .6s ease}
+.badge-esp{font-size:10px;padding:3px 9px;border-radius:20px;background:#FAEEDA;color:#633806;display:inline-block;margin-top:6px}
+
+/* Tabs */
+.tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tab{font-size:12px;padding:5px 12px;border-radius:20px;border:1px solid #D3D1C7;background:#fff;color:#5F5E5A;cursor:pointer;transition:all .15s}
+.tab:hover{background:#F1EFE8}
+.tab.active{background:#1a1a18;color:#fff;border-color:#1a1a18}
+
+/* Tabla detalle */
+.tabla-wrap{background:#fff;border:1px solid #E8E6DE;border-radius:12px;overflow:hidden;margin-bottom:1.5rem}
+.tabla-header{padding:14px 18px 10px;border-bottom:1px solid #F1EFE8;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.tabla-title{font-size:14px;font-weight:500;color:#1a1a18}
+.tabla-stats{font-size:12px;color:#888780}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{padding:9px 14px;text-align:left;font-size:11px;font-weight:500;color:#888780;text-transform:uppercase;letter-spacing:.04em;background:#F5F5F3;border-bottom:1px solid #E8E6DE}
+td{padding:9px 14px;border-top:1px solid #F1EFE8;color:#1a1a18;vertical-align:middle}
+tr:hover td{background:#FAFAF8}
+select{font-size:12px;padding:4px 8px;border-radius:8px;border:1px solid #D3D1C7;background:#fff;color:#1a1a18;cursor:pointer;font-family:'IBM Plex Sans',sans-serif}
+select:focus{outline:none;border-color:#378ADD}
+
+/* Botón */
+.btn-actualizar{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;font-size:13px;font-weight:500;border-radius:10px;border:1px solid #D3D1C7;background:#fff;color:#1a1a18;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:all .15s}
+.btn-actualizar:hover{background:#1a1a18;color:#fff;border-color:#1a1a18}
+
+/* Gráfico */
+.chart-wrap{background:#fff;border:1px solid #E8E6DE;border-radius:12px;padding:20px;margin-bottom:1.5rem}
+.chart-title{font-size:14px;font-weight:500;color:#1a1a18;margin-bottom:16px}
+.chart-area{position:relative;height:220px}
+
+/* Badge estado */
+.badge{font-size:11px;font-weight:500;padding:3px 10px;border-radius:12px;display:inline-block}
+
+footer{text-align:right;font-size:11px;color:#B4B2A9;margin-top:1rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div>
+      <h1>Cumplimiento de programas de validaciones 2026</h1>
+      <p class="sub">Indicador: Cumplimiento Programas de Validaciones · Seguimiento semanal</p>
+      <p class="formula">Fórmula: Validaciones ejecutadas / Validaciones programadas</p>
+    </div>
+  </div>
+
+  <div class="aviso">
+    <strong>⏳ Programas pendientes de incorporar:</strong>&nbsp;
+    VAL-008-PQR (Revisión anual de producto) — emisión estimada 19/06 &nbsp;|&nbsp;
+    VAL-008-CRIT (Sistemas críticos) — emisión durante esta semana. Se agregarán al recibir los documentos firmados.
+  </div>
+
+  <div class="legend">
+    <div class="leg"><div class="dot" style="background:#639922"></div>Cumple — ≥90%</div>
+    <div class="leg"><div class="dot" style="background:#EF9F27"></div>En alerta — 80% a 89%</div>
+    <div class="leg"><div class="dot" style="background:#E24B4A"></div>No cumple — &lt;80%</div>
+  </div>
+
+  <div class="semaforo-wrap">
+    <div class="semaforo" id="semaforo">Calculando...</div>
+  </div>
+
+  <div class="cards" id="cards-resumen"></div>
+
+  <div class="section-title">Avance por programa</div>
+  <div class="prog-grid" id="prog-grid"></div>
+
+  <div class="chart-wrap">
+    <div class="chart-title">Cumplimiento por programa (% ejecutado)</div>
+    <div class="chart-area"><canvas id="chart" role="img" aria-label="Gráfico de barras con porcentaje de cumplimiento por programa de validaciones"></canvas></div>
+  </div>
+
+  <div class="section-title">Registro de ejecución</div>
+  <div class="tabs" id="tabs"></div>
+
+  <div class="tabla-wrap">
+    <div class="tabla-header">
+      <div class="tabla-title" id="tabla-title"></div>
+      <div class="tabla-stats" id="tabla-stats"></div>
+    </div>
+    <table id="tabla-detalle"></table>
+  </div>
+
+  <button class="btn-actualizar" onclick="calcular()">Actualizar KPI →</button>
+
+  <footer>KPI Validaciones 2026 · Aseguramiento de Calidad · Instituto Bioquímico Beta S.A.</footer>
+</div>
+
+<script>
+var PROGRAMAS = [
+  {
+    codigo:"VAL-008-CALI", nombre:"Calificación de Equipos",
+    items:[
+      "Durometro N°489","Agitador St-Inox","Blistera Argentécnica",
+      "Tamizador oscilante FREWITT#3","Blistera CAM #1","Agitador Ekato",
+      "Horno de secado #2 – área sólidos","Estuchadora #1","Estuchadora #2",
+      "Durometro N°333","Reactor 2000 L","Cámara climática #1447",
+      "Sachetera V/P, R, Área Efervescentes","Molino Fitz Patrick Mill",
+      "Tapadora de frascos Mewes","Dosificadora Gronninger",
+      "Comprimidora Kilian S250 SMART","Amasadora Glen Mixer",
+      "Reactor Laborall","Estuchadora #5"
+    ]
+  },
+  {
+    codigo:"VAL-008-PRO", nombre:"Validación de Procesos",
+    items:[
+      "Plemilar jarabe 30mg/5mL","Piesan polvo tópico 1%","Citroneuron caps",
+      "Aquaso A.C.O solución para gotas","Ipsalfex 10 comp. recubiertos 10mg",
+      "Dislden 50 comp. recubiertos 50mg","Fluconazol cápsulas 150mg",
+      "Aimmit comprimidos recub 500mg","Trigilb 50 comprimidos 50mg",
+      "Lamotrigina comprimidos 50mg","Flogotone forte comprimidos",
+      "Algalin gotas orales recubiertos 550mg","Algalin jarabe 120mg/5mL",
+      "Algasol forte suspensión oral","Ipsalfex 5 comp. recubiertos 200mg",
+      "Desloratadina jarabe 2.5mg/5mL","Tigha comprimidos recub 500mg"
+    ]
+  },
+  {
+    codigo:"VAL-008-LIMP", nombre:"Validación de Limpieza",
+    items:[
+      "Dosificador Kalishmatic","Agitador St/NOX","Reactor de 200 litros",
+      "Estanques almacenamiento 500L","Bomba lobular","Mamita acero inox. #5",
+      "Tambow 200L/1L/2L/0L","Mezclador Doble Cono #2","Sachetera VPR",
+      "Tamizador oscilante Frewit #3","Comprimidora #6 Manesty D38","Horno de secado #1",
+      "Reactor laborall","Llenadora de pomos past","Amasador/granuladora Lodge #1",
+      "Tamizador Alexanderwerk #4","Comprimidora #1 Cillan RTS 2 Eléctrica",
+      "Tamizador de tambor #2","Reactor de 300 litros","Llenadora de polvo #1 MAR (bago)",
+      "Blistera #1","Blistera #3 Uhlmann","Bomba peristáltica Watson Marion",
+      "Llenadora de polvo #2 MAR (bago)","Llenadora de polvo #1 MAR",
+      "Comprimidora #8 Stoess B2","Mezclador de tambor #1","Horno de secado #5","Reactor de 30L"
+    ]
+  },
+  {
+    codigo:"VAL-008-AIRC", nombre:"Monitoreo Microbiológico Aire Comprimido",
+    items:[
+      "AC-000/Patio (1)","AC-007/Compresión Efervescentes (1)","AC-012/Lavadero Inox. Jarabes (1)",
+      "AC-040/Palla #5 (1)","AC-009/Estuchadora 1","AC-025/Sala Blisteado 4",
+      "AC-000/Patio (2)","AC-010/Control de calidad","AC-020/Granulación 2",
+      "AC-025/Palla 1 y 4","AC-048/Sala Blisteado 4","AC-009/Estuchadora 4 (1)",
+      "AC-033/Sala Blisteado 3","AC-017/Llenado y sellado cremas","AC-021/Mezclador pantalón",
+      "AC-009/Preparado Efervescentes","AC-000/Patio (3)","AC-029/Granulación 1",
+      "AC-042/Sala Blisteado 1","AC-040/Palla #5 (2)","AC-007/Compresión Efervescentes (2)",
+      "AC-012/Lavadero Inox. Jarabes (2)","AC-009/Estuchadora 4 (2)"
+    ]
+  },
+  {
+    codigo:"VAL-008-WPU", nombre:"Sanitización Agua Purificada",
+    items:[
+      "Pre-Tratamiento (1)","Tratamiento (1)","Pre-Tratamiento (2)","Tratamiento (2)",
+      "Pre-Tratamiento (3)","Tratamiento (3)","Pre-Tratamiento (4)","Tratamiento (4)",
+      "Pre-Tratamiento (5)","Tratamiento (5)","Pre-Tratamiento (6)","Tratamiento (6)",
+      "Pre-Tratamiento (7)","Tratamiento (7)"
+    ]
+  },
+  {
+    codigo:"VAL-008-HNV", nombre:"Monitoreo Ambiental HVAC – Partículas No Viables",
+    items: (function(){
+      var zonas=[
+        {z:"1 PERF",n:15},{z:"2 Recubrimiento",n:15},{z:"3 Compresión",n:16},
+        {z:"4 Granulado",n:17},{z:"5 CR",n:14},{z:"6 EF",n:10},{z:"7 KAUSH",n:4},
+        {z:"8 LAV FRASCO",n:2},{z:"9 Fab. Líquidos",n:6},{z:"10 FRACC",n:10},
+        {z:"11 GRONINGER",n:4},{z:"13 BLISTERA",n:12},{z:"14 MICROB",n:6},{z:"15 MUESTREO",n:4}
+      ];
+      var arr=[];
+      zonas.forEach(function(z){for(var i=1;i<=z.n;i++) arr.push(z.z+' – Sala '+i);});
+      return arr;
+    })()
+  },
+  {
+    codigo:"VAL-008-HVI", nombre:"Monitoreo Ambiental HVAC – Microorganismos Viables",
+    items: (function(){
+      var zonas=[
+        {z:"1 PERF",n:15},{z:"2 Recubrimiento",n:15},{z:"3 Compresión",n:16},
+        {z:"4 Granulado",n:17},{z:"5 CR",n:14},{z:"6 EF",n:10},{z:"7 KAUSH",n:4},
+        {z:"8 LAV FRASCO",n:2},{z:"9 Fab. Líquidos",n:6},{z:"10 FRACC",n:10},
+        {z:"11 GRONINGER",n:4},{z:"13 BLISTERA",n:12},{z:"14 MICROB",n:6},{z:"15 MUESTREO",n:4}
+      ];
+      var arr=[];
+      zonas.forEach(function(z){for(var i=1;i<=z.n;i++) arr.push(z.z+' – Sala '+i);});
+      return arr;
+    })()
+  }
+];
+
+var PENDIENTES = [
+  {codigo:"VAL-008-PQR", nombre:"Revisión anual de producto (PQR)", eta:"Emisión estimada 19/06"},
+  {codigo:"VAL-008-CRIT", nombre:"Sistemas críticos", eta:"Emisión esta semana"}
+];
+
+var estados = PROGRAMAS.map(function(p){return p.items.map(function(){return 'pendiente';});});
+var tabActiva = 0;
+var chart = null;
+
+var C = {
+  green:{val:"#3B6D11",pb:"#EAF3DE",pt:"#27500A",seg:"#639922",lbl:"Cumple"},
+  yellow:{val:"#854F0B",pb:"#FAEEDA",pt:"#633806",seg:"#EF9F27",lbl:"En alerta"},
+  red:{val:"#A32D2D",pb:"#FCEBEB",pt:"#791F1F",seg:"#E24B4A",lbl:"No cumple"}
+};
+
+function getEstado(pct){return pct>=90?'green':pct>=80?'yellow':'red';}
+function getColor(pct){return C[getEstado(pct)].seg;}
+
+function calcular(){
+  PROGRAMAS.forEach(function(p,pi){
+    p.items.forEach(function(_,ii){
+      var sel=document.getElementById('sel-'+pi+'-'+ii);
+      if(sel) estados[pi][ii]=sel.value;
+    });
+  });
+  renderAll();
+}
+
+function renderSemaforo(){
+  var total=PROGRAMAS.reduce(function(s,p){return s+p.items.length;},0);
+  var ejec=estados.reduce(function(s,arr){return s+arr.filter(function(v){return v==='ejecutada';}).length;},0);
+  var pct=total>0?Math.round(ejec/total*100):0;
+  var e=getEstado(pct); var c=C[e];
+  var msgs={green:'✔  Cumplimiento '+pct+'% — dentro de meta (≥90%)',yellow:'⚠  Cumplimiento '+pct+'% — en alerta (80%–89%)',red:'✖  Cumplimiento '+pct+'% — bajo meta (<80%)'};
+  var sem=document.getElementById('semaforo');
+  sem.style.background=c.seg; sem.textContent=msgs[e];
+
+  document.getElementById('cards-resumen').innerHTML=
+    '<div class="card"><div class="card-num">'+total+'</div><div class="card-lbl">Programadas</div></div>'+
+    '<div class="card"><div class="card-num" style="color:'+c.val+'">'+ejec+'</div><div class="card-lbl">Ejecutadas</div></div>'+
+    '<div class="card"><div class="card-num" style="color:'+c.val+'">'+pct+'%</div><div class="card-lbl">Cumplimiento</div></div>'+
+    '<div class="card"><div class="card-num" style="color:#A32D2D">'+(total-ejec)+'</div><div class="card-lbl">Pendientes</div></div>';
+}
+
+function renderProgGrid(){
+  var html=PROGRAMAS.map(function(p,pi){
+    var total=p.items.length;
+    var ejec=estados[pi].filter(function(v){return v==='ejecutada';}).length;
+    var pct=total>0?Math.round(ejec/total*100):0;
+    var color=getColor(pct);
+    return '<div class="prog-card">'+
+      '<div class="prog-code">'+p.codigo+'</div>'+
+      '<div class="prog-name">'+p.nombre+'</div>'+
+      '<div class="prog-nums"><span class="prog-ejec" style="color:'+color+'">'+ejec+'</span><span class="prog-total">/ '+total+'</span></div>'+
+      '<div class="bar-bg"><div class="bar-fill" style="width:'+pct+'%;background:'+color+'"></div></div>'+
+    '</div>';
+  }).join('');
+
+  html+=PENDIENTES.map(function(p){
+    return '<div class="prog-card pendiente-doc">'+
+      '<div class="prog-code">'+p.codigo+'</div>'+
+      '<div class="prog-name">'+p.nombre+'</div>'+
+      '<div class="badge-esp">⏳ '+p.eta+'</div>'+
+    '</div>';
+  }).join('');
+
+  document.getElementById('prog-grid').innerHTML=html;
+}
+
+function renderChart(){
+  var ctx=document.getElementById('chart').getContext('2d');
+  if(chart) chart.destroy();
+  var labels=PROGRAMAS.map(function(p){return p.codigo.replace('VAL-008-','');});
+  var data=PROGRAMAS.map(function(p,pi){
+    var total=p.items.length;
+    var ejec=estados[pi].filter(function(v){return v==='ejecutada';}).length;
+    return total>0?Math.round(ejec/total*100):0;
+  });
+  var colors=data.map(function(v){return getColor(v);});
+  chart=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:labels,
+      datasets:[{
+        label:'% cumplimiento',
+        data:data,
+        backgroundColor:colors.map(function(c){return c+'33';}),
+        borderColor:colors,
+        borderWidth:2,
+        borderRadius:6,
+        borderSkipped:false
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:function(ctx){return ' '+ctx.parsed.y+'%';}}}
+      },
+      scales:{
+        y:{min:0,max:100,ticks:{callback:function(v){return v+'%';},font:{size:11}},grid:{color:'rgba(0,0,0,0.05)'}},
+        x:{ticks:{font:{size:11,family:"'IBM Plex Sans',sans-serif"}},grid:{display:false}}
+      }
+    }
+  });
+}
+
+function renderTabs(){
+  document.getElementById('tabs').innerHTML=PROGRAMAS.map(function(p,i){
+    return '<div class="tab'+(i===tabActiva?' active':'')+'" onclick="setTab('+i+')">'+p.codigo.replace('VAL-008-','')+'</div>';
+  }).join('');
+}
+
+function setTab(i){tabActiva=i;renderTabs();renderTabla();}
+
+function renderTabla(){
+  var p=PROGRAMAS[tabActiva]; var pi=tabActiva;
+  var ejec=estados[pi].filter(function(v){return v==='ejecutada';}).length;
+  var noEjec=estados[pi].filter(function(v){return v==='no_ejecutada';}).length;
+  document.getElementById('tabla-title').textContent=p.codigo+' — '+p.nombre;
+  document.getElementById('tabla-stats').textContent=ejec+' ejecutadas · '+noEjec+' no ejecutadas · '+(p.items.length-ejec-noEjec)+' pendientes';
+  document.getElementById('tabla-detalle').innerHTML=
+    '<thead><tr><th style="width:40px">#</th><th>Ítem / Punto</th><th style="width:150px">Estado</th></tr></thead>'+
+    '<tbody>'+p.items.map(function(item,ii){
+      var v=estados[pi][ii];
+      var badgeStyle=v==='ejecutada'?'background:#EAF3DE;color:#27500A':v==='no_ejecutada'?'background:#FCEBEB;color:#791F1F':'background:#F1EFE8;color:#5F5E5A';
+      return '<tr>'+
+        '<td style="color:#888780">'+( ii+1)+'</td>'+
+        '<td>'+item+'</td>'+
+        '<td><select id="sel-'+pi+'-'+ii+'" onchange="calcular()" style="'+badgeStyle+'">'+
+          '<option value="pendiente"'+(v==='pendiente'?' selected':'')+'>Pendiente</option>'+
+          '<option value="ejecutada"'+(v==='ejecutada'?' selected':'')+'>Ejecutada</option>'+
+          '<option value="no_ejecutada"'+(v==='no_ejecutada'?' selected':'')+'>No ejecutada</option>'+
+        '</select></td>'+
+      '</tr>';
+    }).join('')+'</tbody>';
+}
+
+function renderAll(){renderSemaforo();renderProgGrid();renderChart();renderTabs();renderTabla();}
+renderAll();
+</script>
+</body>
+</html>
